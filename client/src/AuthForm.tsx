@@ -9,9 +9,20 @@ function AuthForm() {
 
   const toggleMode = () => setMode(mode === 'login' ? 'signup' : 'login');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log(mode === 'login' ? 'Logging in...' : 'Creating account...');
+  const handleSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const res = await fetch(`http://localhost:3001/api/auth/${mode}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+  
+    const data = await res.json();
+    if (res.ok) {
+      console.log(`${mode === 'login' ? 'Login' : 'Signup'} successful`, data);
+    } else {
+      console.error(`${mode === 'login' ? 'Login' : 'Signup'} failed:`, data.message);
+    }
   };
 
   return (
