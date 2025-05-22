@@ -1,6 +1,8 @@
-require('dotenv').config({ path: '../.env' }); // loads variables from .env
+// loads variables from .env
+import dotenv from 'dotenv';
+dotenv.config();
 
-module.exports = {
+export default {
   development: {
     username: process.env.DB_USER || 'devuser',
     password: process.env.DB_PASS || 'devpass',

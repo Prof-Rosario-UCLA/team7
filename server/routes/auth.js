@@ -1,16 +1,16 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import User from '../models/user.js'; // make sure to use the .js extension
+import db from '../models/index.js';
+const { User } = db;
 
 const router = express.Router();
 
 // Signup
 router.post('/signup', async (req, res) => {
-  const { email, password } = req.body;
-
+  const { email, password, name } = req.body;
   try {
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, password: hashed });
+    const user = await User.create({ email, password: hashed, name: name });
     res.status(201).json({ message: 'User created', userId: user.id });
   } catch (err) {
     if (err.name === 'SequelizeUniqueConstraintError') {
