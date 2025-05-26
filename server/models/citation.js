@@ -32,7 +32,7 @@ const Citation = (sequelize, DataTypes) => {
         defaultValue: DataTypes.NOW
       },
       location: {
-        type: DataTypes.STRING,
+        type: DataTypes.GEOGRAPHY('POINT', 4326),
         allowNull: false
       },
       status: {

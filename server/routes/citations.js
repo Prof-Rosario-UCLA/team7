@@ -73,6 +73,43 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// GET citations closest to a certain location, formatted as "lat,lng" → GET /citations/:location
+// GET /citations/34.022,-118.289?radius=500
+router.get('/:location', async (req, res) => {
+  try {
+    const [latStr, lngStr] = req.params.location.split(',');
+    const lat = parseFloat(latStr);
+    const lng = parseFloat(lngStr);
+    const radius = parseFloat(req.query.radius) || 1000; // in meters
+
+    if (isNaN(lat) || isNaN(lng)) {
+      return res.status(400).json({ error: 'Invalid location format. Use lat,lng' });
+    }
+
+    const [results] = await sequelize.query(`
+      SELECT *
+      FROM "Citation"
+      WHERE ST_DWithin(
+        coord,
+        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+        :radius
+      )
+      ORDER BY ST_Distance(
+        coord,
+        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
+      )
+      LIMIT 50
+    `, {
+      replacements: { lat, lng, radius },
+    });
+
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // UPDATE a citation → PUT /citations/:id
 router.put('/:id', async (req, res) => {
   try {

@@ -1,13 +1,19 @@
 import { useState } from 'react';
+import { Routes, Route } from 'react-router-dom'
 import './App.css';
-import AuthForm from './AuthForm';
+import 'leaflet/dist/leaflet.css';
+import AuthForm from './pages/AuthForm';
+import Home from './pages/Home';
+import Report from './pages/Report';
+
 
 function App() {
   return (
-    <>
-    <div className="bg-green-500 text-white text-center p-10 rounded-lg"><h1 className="text-6xl"> BreakChekr </h1></div>
-    <AuthForm/>
-    </>
+    <Routes>
+      <Route path="/login" element={<AuthForm/>}/>
+      <Route path="/" element={<Home/>}/>
+      <Route path="/report" element={<Report/>}/>
+    </Routes>
   )
 }
 
