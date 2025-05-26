@@ -35,7 +35,7 @@ function Home() {
         (err) => {
           console.error('Geolocation error:', err);
           setError('Failed to get location. Using default.');
-          setLocation({ lat: 34.022, lng: -118.289 }); // fallback
+          setLocation({ lat: 34.068, lng: -118.453 }); // fallback
         },
         {
           enableHighAccuracy: true,
