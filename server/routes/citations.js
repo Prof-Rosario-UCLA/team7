@@ -1,4 +1,7 @@
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import db from '../models/index.js';
 
 const router = express.Router();
@@ -143,5 +146,7 @@ router.delete('/:id', async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
+
 
 export default router;
