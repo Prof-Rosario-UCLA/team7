@@ -8,11 +8,20 @@ const router = express.Router();
 // Signup
 router.post('/signup', async (req, res) => {
   const { email, password, name } = req.body;
+
+  console.log('📨 Signup request received with payload:', { email, name });
+
   try {
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, password: hashed, name: name });
+    console.log('🔐 Password hashed');
+
+    const user = await User.create({ email, password: hashed, name });
+    console.log('✅ User created with ID:', user.id);
+
     res.status(201).json({ message: 'User created', userId: user.id });
   } catch (err) {
+    console.error('❌ Signup error:', err);
+
     if (err.name === 'SequelizeUniqueConstraintError') {
       res.status(409).json({ message: 'Email already in use' });
     } else {

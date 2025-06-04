@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize, DataTypes } from 'sequelize';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -12,6 +12,10 @@ const sequelize = new Sequelize(
     logging: false
   }
 );
+
+// Import and register models
+import defineUser from '../models/user.js';
+defineUser(sequelize, DataTypes); 
 
 export default sequelize;
 

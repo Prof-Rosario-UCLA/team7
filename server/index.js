@@ -22,7 +22,7 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('✅ DB connection successful');
 
-    await sequelize.sync();
+    await sequelize.sync({alter: true});
     console.log('✅ DB synced');
 
     app.listen(PORT, () => {
