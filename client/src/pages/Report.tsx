@@ -168,13 +168,25 @@ function Report() {
         </div>
 
         <div>
-          <label className="block mb-1 font-medium">Upload Image/Video (optional)</label>
-          <input
-            type="file"
-            accept="image/*,video/*"
-            onChange={handleFileChange}
-            className="w-full p-2 rounded border border-gray-300"
-          />
+            <label className="block mb-2 font-medium">Upload Image/Video (optional)</label>
+            <div className="flex items-center justify-between gap-4 border border-dashed border-gray-400 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+            <input
+                type="file"
+                accept="image/*,video/*"
+                id="file-upload"
+                onChange={handleFileChange}
+                className="hidden"
+            />
+            <label
+                htmlFor="file-upload"
+                className="text-[var(--color-primary)] font-semibold cursor-pointer"
+            >
+                {file ? 'Change File' : 'Choose File'}
+            </label>
+            <span className="text-sm text-gray-700 truncate w-full text-right">
+                {file ? file.name : 'No file chosen'}
+            </span>
+            </div>
         </div>
 
         <div>
