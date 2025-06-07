@@ -6,6 +6,7 @@ import authRoutes from '../routes/auth.js';
 import carRoutes from '../routes/cars.js';
 import driverRoutes from '../routes/drivers.js';
 import citationRoutes from '../routes/citations.js';
+import cookieParser from 'cookie-parser';
 
 use(chaiHttp);
 const { sequelize } = db;
@@ -13,6 +14,7 @@ const { sequelize } = db;
 const makeApp = () => {
   const app = express();
   app.use(express.json());
+  app.use(cookieParser());
   app.use('/api/auth', authRoutes);
   app.use('/api/cars', carRoutes);
   app.use('/api/drivers', driverRoutes);
@@ -35,11 +37,18 @@ describe('API Routes', function () {
       const signup = await request.execute(app)
         .post('/api/auth/signup')
         .send({ email: 'apiuser@example.com', password: 'pass', name: 'Auth User' });
-      expect(signup.status).to.equal(201);
+      if (signup.status !== 201) console.error('Signup error:', signup.body);
       const login = await request.execute(app)
         .post('/api/auth/login')
-        .send({ email: 'apiuser@example.com', password: 'pass', name: 'Auth User' });
-      expect(login.status).to.equal(200);
+        .send({ email: 'apiuser@example.com', password: 'pass' });
+      if (login.status !== 200) console.error('Login error:', login.body);
+      const cookie = login.headers['set-cookie'][0].split(';')[0];
+      const protectedRes = await request.execute(app)
+        .get('/api/auth/protected')
+        .set('Cookie', cookie);
+      expect(protectedRes.status).to.equal(200);
+      expect(protectedRes.body).to.have.property('user');
+      expect(protectedRes.body.user).to.have.property('userId');
     });
   });
 
@@ -78,7 +87,7 @@ describe('API Routes', function () {
         .send({
           user_id: user.id,
           car_id: car.id,
-          location: 'API Test',
+          location: { type: 'Point', coordinates: [-118.289, 34.022] },
           status: 'submitted',
           violation: 'speeding',
           timestamp: new Date(),

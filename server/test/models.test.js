@@ -34,12 +34,14 @@ describe('Model CRUD', function () {
     const citation = await Citation.create({
       user_id: user.id,
       car_id: car.id,
-      location: 'Test Location',
+      location: { type: 'Point', coordinates: [-118.289, 34.022] },
       status: 'submitted',
       violation: 'parking',
       timestamp: new Date(),
     });
     const found = await Citation.findByPk(citation.id);
-    expect(found.location).to.equal('Test Location');
+    expect(found.location.type).to.equal('Point');
+    expect(found.location.coordinates[0]).to.equal(-118.289);
+    expect(found.location.coordinates[1]).to.equal(34.022);
   });
 }); 
