@@ -9,6 +9,13 @@ export interface Citation {
       coordinates: [number, number];
     };
     violation: 'speeding' | 'parking' | 'signal' | 'other';
+    timestamp: string;
+    car: {
+      id: number;
+      license_plate_num: string;
+      car_color: string;
+      car_model: string;
+    };
 }
 
 function Home() {

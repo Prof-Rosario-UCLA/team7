@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { Citation } from './Home'; 
+import '../utils/leaflet-icons';
+import type { Citation } from './Home';
 
 interface MapProps {
     citations: Citation[];
@@ -10,6 +11,12 @@ interface MapProps {
 function Map({ citations, center }: MapProps) {
     console.log('Rendering map with center:', center);
     console.log('Citations:', citations);
+
+    const formatDate = (timestamp: string) => {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    };
+
     return (
       <div className="h-[500px] w-full">
         <MapContainer center={center} zoom={14} scrollWheelZoom={true} className="h-full w-full">
@@ -27,9 +34,11 @@ function Map({ citations, center }: MapProps) {
               }}
             >
               <Popup>
-                Violation: {citation.violation}
-                <br />
-                ID: {citation.id}
+                <div className="space-y-1">
+                  <div><strong>Violation:</strong> {citation.violation}</div>
+                  <div><strong>License Plate:</strong> {citation.car.license_plate_num}</div>
+                  <div><strong>Time:</strong> {formatDate(citation.timestamp)}</div>
+                </div>
               </Popup>
             </Marker>
           ))}

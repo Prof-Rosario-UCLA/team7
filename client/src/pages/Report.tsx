@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useNavigate } from 'react-router-dom';
 
 const defaultCoords: [number, number] = [34.0522, -118.2437]; // fallback (Los Angeles)
 
@@ -24,6 +25,7 @@ function MapController({ center }: { center: [number, number] }) {
 }
 
 function Report() {
+  const navigate = useNavigate();
   const [citation, setCitation] = useState({
     license_plate: '',
     timestamp: new Date().toISOString(),
@@ -141,7 +143,17 @@ function Report() {
         onSubmit={handleSubmit}
         className="w-full max-w-xl bg-white p-8 rounded-xl shadow-lg space-y-6 text-[var(--color-text)]"
       >
-        <h2 className="text-2xl font-bold text-center text-[var(--color-primary)]">Submit a Citation</h2>
+        <div className="flex justify-between items-center">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="text-[var(--color-primary)] hover:text-[var(--color-accent)]"
+          >
+            ← Back
+          </button>
+          <h2 className="text-2xl font-bold text-[var(--color-primary)]">Submit a Citation</h2>
+          <div className="w-[52px]"></div>
+        </div>
 
         <div>
           <label className="block mb-1 font-medium">License Plate</label>
