@@ -6,6 +6,7 @@ import AuthForm from './pages/AuthForm';
 import Home from './pages/Home';
 import Report from './pages/Report';
 import RequireAuth from './context/RequireAuth';
+import { AuthProvider } from './context/AuthContext';
 
 
 function App() {
@@ -32,4 +33,8 @@ function App() {
   )
 }
 
-export default App
+export default () => (
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+)

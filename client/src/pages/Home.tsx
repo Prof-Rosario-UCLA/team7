@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Map from './Map';
+import { useAuth } from '../context/AuthContext';
   
 
 export interface Citation {
@@ -51,14 +52,17 @@ function Home() {
     
           setLoading(true);
           try {
-            const res = await fetch(
-              `http://localhost:3001/citations/${location.lat},${location.lng}?radius=1000`
-            );
+            const res = await fetch('/api/citations');
             const data = await res.json();
-            setCitations(data);
+            if (Array.isArray(data)) {
+              setCitations(data);
+            } else {
+              setCitations([]);
+              console.error('Citations response is not an array:', data);
+            }
           } catch (err) {
-            console.error(err);
-            setError('Failed to fetch nearby citations.');
+            setCitations([]);
+            console.error('Failed to fetch nearby citations:', err);
           } finally {
             setLoading(false);
           }
@@ -66,6 +70,9 @@ function Home() {
     
         fetchCitations();
     }, [location]);
+
+    // Optionally, get user info
+    // const { user } = useAuth();
 
     return (
         <div>

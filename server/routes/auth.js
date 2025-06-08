@@ -49,9 +49,9 @@ router.post('/login', async (req, res) => {
     // Set JWT as HTTP-only cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // set to true in production
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 1000, // 1 hour
+      sameSite: 'lax',
+      secure: false,
+      path: '/',
     });
 
     res.status(200).json({ message: 'Login successful', userId: user.id });
@@ -62,6 +62,15 @@ router.post('/login', async (req, res) => {
 
 router.get('/protected', authenticateToken, (req, res) => {
   res.json({ message: 'This is protected', user: req.user });
+});
+
+router.get('/me', authenticateToken, (req, res) => {
+  // Return the user info from the token (or fetch from DB if you want)
+  res.json({
+    id: req.user.userId, // or req.user.id, depending on your token
+    email: req.user.email,
+    // add other fields as needed
+  });
 });
 
 export default router;

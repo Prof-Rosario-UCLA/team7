@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { jwtDecode } from "jwt-decode";
 
 const defaultCoords: [number, number] = [34.0522, -118.2437]; // fallback (Los Angeles)
 
@@ -36,6 +37,7 @@ function Report() {
   const [file, setFile] = useState<File | null>(null);
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultCoords);
+  const [cars, setCars] = useState<{ id: number, license_plate_num: string }[]>([]);
 
   // Get user location on mount
   useEffect(() => {
@@ -54,6 +56,12 @@ function Report() {
         setMarkerPosition(defaultCoords);
       }
     );
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/cars')
+      .then(res => res.json())
+      .then(data => setCars(data));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -81,6 +89,12 @@ function Report() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const car = cars.find(c => c.license_plate_num === citation.license_plate);
+    if (!car) {
+      alert('Car not found!');
+      return;
+    }
+
     let blobUrl = '';
     if (file) {
       const formData = new FormData();
@@ -99,6 +113,7 @@ function Report() {
 
     const payload = {
       ...citation,
+      car_id: car.id,
       blob: blobUrl,
       status: 'submitted',
       location: {
@@ -110,6 +125,7 @@ function Report() {
     const res = await fetch('/api/citations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(payload)
     });
 

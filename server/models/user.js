@@ -22,7 +22,7 @@ const User = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'user',
+      tableName: 'users',
       timestamps: true
     }
   );

@@ -1,35 +1,45 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 
 interface AuthContextType {
-  user: { userId: string } | null;
-  login: (userData: { userId: string }) => void;
+  user: { userId: string; email: string } | null;
+  login: (userData: { userId: string; email: string }) => void;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<{ userId: string } | null>(null);
+  const [user, setUser] = useState<{ userId: string; email: string } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('user');
-    if (stored) {
-      setUser(JSON.parse(stored));
-    }
+    // Check session on mount
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) throw new Error('Not authenticated');
+        return res.json();
+      })
+      .then(user => {
+        setUser(user);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const login = (userData: { userId: string }) => {
+  const login = (userData: { userId: string; email: string }) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    // Optionally, call your backend logout endpoint here
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

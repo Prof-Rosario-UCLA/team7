@@ -1,11 +1,15 @@
 // components/RequireAuth.tsx
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from './AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import React from 'react';
 
 const RequireAuth = ({ children }: { children: React.JSX.Element }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   if (!user) {
     // Redirect to login and preserve the original destination
