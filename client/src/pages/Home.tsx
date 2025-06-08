@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Map from './Map';
-import { useAuth } from '../context/AuthContext';
-  
 
 export interface Citation {
     id: number;
@@ -11,17 +9,15 @@ export interface Citation {
       coordinates: [number, number];
     };
     violation: 'speeding' | 'parking' | 'signal' | 'other';
-  }
+}
 
 function Home() {
     const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [citations, setCitations] = useState<Citation[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
   
     useEffect(() => {
       if (!navigator.geolocation) {
-        setError('Geolocation is not supported by your browser.');
+        console.error('Geolocation is not supported by your browser.');
         return;
       }
       console.log('Trying to get position')
@@ -35,7 +31,7 @@ function Home() {
         },
         (err) => {
           console.error('Geolocation error:', err);
-          setError('Failed to get location. Using default.');
+          console.error('Failed to get location. Using default.');
           setLocation({ lat: 34.068, lng: -118.453 }); // fallback
         },
         {
@@ -50,7 +46,6 @@ function Home() {
         const fetchCitations = async () => {
           if (!location) return;
     
-          setLoading(true);
           try {
             const res = await fetch('/api/citations');
             const data = await res.json();
@@ -63,16 +58,11 @@ function Home() {
           } catch (err) {
             setCitations([]);
             console.error('Failed to fetch nearby citations:', err);
-          } finally {
-            setLoading(false);
           }
         };
     
         fetchCitations();
     }, [location]);
-
-    // Optionally, get user info
-    // const { user } = useAuth();
 
     return (
         <div>

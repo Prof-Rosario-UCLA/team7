@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { jwtDecode } from "jwt-decode";
 
 const defaultCoords: [number, number] = [34.0522, -118.2437]; // fallback (Los Angeles)
 
@@ -51,7 +50,7 @@ function Report() {
           location: { lat: latitude, lng: longitude }
         }));
       },
-      (err) => {
+      () => {
         console.warn('Geolocation failed or denied, using fallback location.');
         setMarkerPosition(defaultCoords);
       }

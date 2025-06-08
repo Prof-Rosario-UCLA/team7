@@ -37,7 +37,13 @@ function AuthForm() {
 
       if (res.ok) {
         console.log(`${mode === 'login' ? 'Login' : 'Signup'} successful`, data);
-        login({ userId: data.userId, email: data.email }); 
+        const userData = {
+          userId: data.userId,
+          email: data.email,
+          name: data.name,
+          token: data.token
+        };
+        login(userData);
         navigate('/');
       } else {
         console.error(`${mode} failed:`, data.message);

@@ -1,7 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useState } from 'react';
-import L from 'leaflet';
 import type { Citation } from './Home'; 
 
 interface MapProps {

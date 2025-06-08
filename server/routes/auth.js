@@ -54,7 +54,13 @@ router.post('/login', async (req, res) => {
       path: '/',
     });
 
-    res.status(200).json({ message: 'Login successful', userId: user.id });
+    res.status(200).json({
+      message: 'Login successful',
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      token: token
+    });
   } catch (err) {
     res.status(500).json({ message: 'Login error', error: err.message });
   }
@@ -64,13 +70,27 @@ router.get('/protected', authenticateToken, (req, res) => {
   res.json({ message: 'This is protected', user: req.user });
 });
 
-router.get('/me', authenticateToken, (req, res) => {
-  // Return the user info from the token (or fetch from DB if you want)
-  res.json({
-    id: req.user.userId, // or req.user.id, depending on your token
-    email: req.user.email,
-    // add other fields as needed
-  });
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({
+      userId: user.id,
+      email: user.email,
+      name: user.name
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching user data', error: err.message });
+  }
+});
+
+// Add logout endpoint
+router.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out successfully' });
 });
 
 export default router;
