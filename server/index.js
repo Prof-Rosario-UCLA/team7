@@ -39,6 +39,16 @@ app.use('/api/drivers',  driverRoutes);
 app.use('/api/citations', citationRoutes);
 app.use('/api/users', userRoutes);
 
+// Serve frontend build
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const clientBuildPath = path.join(__dirname, 'client-build'); // You’ll copy dist here
+
+app.use(express.static(clientBuildPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
+});
+
 async function startServer() {
   try {
     await sequelize.authenticate();
