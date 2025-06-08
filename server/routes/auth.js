@@ -21,7 +21,25 @@ router.post('/signup', async (req, res) => {
     const user = await User.create({ email, password: hashed, name });
     console.log('✅ User created with ID:', user.id);
 
-    res.status(201).json({ message: 'User created', userId: user.id });
+    // Create JWT
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+
+    // Set token as HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false, // set to true in production with HTTPS
+      path: '/',
+    });
+
+    // Return user info
+    res.status(201).json({
+      message: 'User created and logged in',
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      token: token
+    });
   } catch (err) {
     console.error('❌ Signup error:', err);
 

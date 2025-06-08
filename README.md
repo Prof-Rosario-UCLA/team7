@@ -8,7 +8,7 @@ To run backend:
 - node index.js
 
 To set up local db:
-- docker-compose up -d  
+- docker-compose up -d --build 
 
 To halt local db: 
 - docker-compose down  

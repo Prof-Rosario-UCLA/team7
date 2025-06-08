@@ -7,6 +7,7 @@ const { Car } = db;
 // CREATE a new car → POST /cars
 router.post('/', async (req, res) => {
   try {
+    console.log("Creating car:", req.body);
     const { license_plate_num, car_color, car_model } = req.body;
 
     // Check uniqueness
@@ -18,6 +19,7 @@ router.post('/', async (req, res) => {
     const newCar = await Car.create({ license_plate_num, car_color, car_model });
     return res.status(201).json(newCar);
   } catch (err) {
+    console.error(err); 
     return res.status(500).json({ error: err.message });
   }
 });

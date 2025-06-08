@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useNavigate } from 'react-router-dom';
 
 const defaultCoords: [number, number] = [34.0522, -118.2437]; // fallback (Los Angeles)
+
+export interface Car {
+  id: number;
+  license_plate_num: string;
+  car_color?: string;
+  car_model?: string;
+}
 
 function LocationSelector({ onSelect }: { onSelect: (lat: number, lng: number) => void }) {
   useMapEvents({
@@ -14,14 +21,6 @@ function LocationSelector({ onSelect }: { onSelect: (lat: number, lng: number) =
     }
   });
   return null;
-}
-
-function MapController({ center }: { center: [number, number] }) {
-    const map = useMapEvents({});
-    useEffect(() => {
-      map.setView(center);
-    }, [center]);
-    return null;
 }
 
 function Report() {
@@ -38,13 +37,28 @@ function Report() {
   const [file, setFile] = useState<File | null>(null);
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(defaultCoords);
-  const [cars, setCars] = useState<{ id: number, license_plate_num: string }[]>([]);
+  const [cars, setCars] = useState<Car[]>([]);
 
-  // Get user location on mount
   useEffect(() => {
+    fetch('/api/cars')
+      .then(res => res.json())
+      .then((data: Car[]) => {
+        console.log('Fetched cars:', data);
+        setCars(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch cars:', err);
+        setCars([]);
+      });
+  }, []);
+
+  const getUserLocation = () => {
+    console.log("📍 Button clicked!");
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        console.log('✅ Got location:', latitude, longitude);
+        console.log('Setting center to:', [latitude, longitude]);
         setMapCenter([latitude, longitude]);
         setMarkerPosition([latitude, longitude]);
         setCitation((prev) => ({
@@ -52,18 +66,19 @@ function Report() {
           location: { lat: latitude, lng: longitude }
         }));
       },
-      () => {
-        console.warn('Geolocation failed or denied, using fallback location.');
+      (err) => {
+        console.warn('❌ Geolocation error:', err);
+        alert('Could not access your location. Using fallback location.');
+        setMapCenter(defaultCoords);
         setMarkerPosition(defaultCoords);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
       }
     );
-  }, []);
-
-  useEffect(() => {
-    fetch('/api/cars')
-      .then(res => res.json())
-      .then(data => setCars(data));
-  }, []);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -90,18 +105,12 @@ function Report() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const car = cars.find(c => c.license_plate_num === citation.license_plate);
-    if (!car) {
-      alert('Car not found!');
-      return;
-    }
-
     let blobUrl = '';
     if (file) {
       const formData = new FormData();
       formData.append('file', file);
 
-      const uploadRes = await fetch('/api/upload', {
+      const uploadRes = await fetch('/api/citations/upload', {
         method: 'POST',
         body: formData
       });
@@ -112,9 +121,32 @@ function Report() {
       }
     }
 
+    let carId: number | undefined;
+    const existingCar = cars.find(c => c.license_plate_num === citation.license_plate);
+
+    if (existingCar) {
+      carId = existingCar.id;
+    } else {
+      // Create new car in DB
+      const newCarRes = await fetch('/api/cars', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ license_plate_num: citation.license_plate })
+      });
+
+      if (!newCarRes.ok) {
+        alert('Failed to create car');
+        return;
+      }
+
+      const newCar = await newCarRes.json();
+      carId = newCar.id;
+    }
+
     const payload = {
       ...citation,
-      car_id: car.id,
+      car_id: carId,
       blob: blobUrl,
       status: 'submitted',
       location: {
@@ -132,16 +164,17 @@ function Report() {
 
     if (res.ok) {
       alert('Citation submitted!');
+      navigate("/");
     } else {
       alert('Submission failed');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] p-6">
+    <div className="h-screen overflow-hidden flex items-center justify-center bg-[var(--color-background)] p-6">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-xl bg-white p-8 rounded-xl shadow-lg space-y-6 text-[var(--color-text)]"
+        className="h-full max-h-[90vh] overflow-y-auto w-full max-w-xl bg-white p-8 rounded-xl shadow-lg space-y-6 text-[var(--color-text)]"
       >
         <div className="flex justify-between items-center">
           <button
@@ -216,11 +249,18 @@ function Report() {
             </div>
         </div>
 
+        <button
+        type="button"
+        onClick={getUserLocation}
+        className="mb-4 py-1 px-3 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition text-sm"
+        >
+        📍 Use My Location
+        </button>
+
         <div>
           <label className="block mb-2 font-medium">Pinpoint Location</label>
-          <MapContainer center={mapCenter} zoom={13} className="h-64 w-full rounded-md">
+          <MapContainer key={mapCenter.join(',')} center={mapCenter} zoom={13} className="h-64 w-full rounded-md">
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <MapController center={mapCenter} />
             <LocationSelector onSelect={handleLocationSelect} />
             {markerPosition && (
               <Marker

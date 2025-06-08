@@ -13,9 +13,22 @@ const sequelize = new Sequelize(
   }
 );
 
-// Import and register models
-import defineUser from '../models/user.js';
-defineUser(sequelize, DataTypes); 
+// Register models
+import defineUser     from '../models/user.js';
+import defineCar      from '../models/car.js';
+import defineCitation from '../models/citation.js';
+import defineDriver   from '../models/driver.js';
+
+const User     = defineUser(sequelize, DataTypes);
+const Car      = defineCar(sequelize, DataTypes);
+const Citation = defineCitation(sequelize, DataTypes);
+const Driver   = defineDriver(sequelize, DataTypes);
+
+// Setup associations
+const models = { User, Car, Citation, Driver };
+if (User.associate)     User.associate(models);
+if (Car.associate)      Car.associate(models);
+if (Citation.associate) Citation.associate(models);
+if (Driver.associate)   Driver.associate(models);
 
 export default sequelize;
-
