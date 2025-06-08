@@ -3,5 +3,8 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "vite-plugin-pwa": "^1.0.0"
   }
 }

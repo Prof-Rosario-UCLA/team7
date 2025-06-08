@@ -3,16 +3,20 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import db from '../models/index.js';
+import jwt from 'jsonwebtoken';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 const { Citation, User, Car } = db;
 
 // CREATE a new citation → POST /citations
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
+    console.log('req.user:', req.user);
+    console.log('car_id from body:', req.body.car_id);
+
     const {
       blob,
-      user_id,
       car_id,
       timestamp,
       location,
@@ -21,6 +25,8 @@ router.post('/', async (req, res) => {
       notes
     } = req.body;
 
+    const user_id = req.user.userId; // <-- get user id from the authenticated user
+
     // Validate FK existence:
     const user = await User.findByPk(user_id);
     const car  = await Car.findByPk(car_id);
@@ -28,10 +34,13 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Invalid user_id or car_id' });
     }
 
+    console.log('user found:', user ? user.id : null);
+    console.log('car found:', car ? car.id : null);
+
     const newCitation = await Citation.create({
       blob:       blob || null,
-      user_id,
-      car_id,
+      user_id: user_id,
+      car_id: car_id,
       timestamp:  timestamp ? new Date(timestamp) : new Date(),
       location,
       status,

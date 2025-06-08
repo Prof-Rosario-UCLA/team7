@@ -29,6 +29,7 @@ function AuthForm() {
       const res = await fetch(`http://localhost:3001/api/auth/${mode}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -36,7 +37,13 @@ function AuthForm() {
 
       if (res.ok) {
         console.log(`${mode === 'login' ? 'Login' : 'Signup'} successful`, data);
-        login({ userId: data.userId }); 
+        const userData = {
+          userId: data.userId,
+          email: data.email,
+          name: data.name,
+          token: data.token
+        };
+        login(userData);
         navigate('/');
       } else {
         console.error(`${mode} failed:`, data.message);

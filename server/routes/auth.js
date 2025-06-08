@@ -1,9 +1,12 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import db from '../models/index.js';
+import jwt from 'jsonwebtoken';
+import { authenticateToken } from '../middleware/auth.js';
 const { User } = db;
 
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 
 // Signup
 router.post('/signup', async (req, res) => {
@@ -40,10 +43,54 @@ router.post('/login', async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
 
-    res.status(200).json({ message: 'Login successful', userId: user.id });
+    // Create JWT
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+
+    // Set JWT as HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      path: '/',
+    });
+
+    res.status(200).json({
+      message: 'Login successful',
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      token: token
+    });
   } catch (err) {
     res.status(500).json({ message: 'Login error', error: err.message });
   }
+});
+
+router.get('/protected', authenticateToken, (req, res) => {
+  res.json({ message: 'This is protected', user: req.user });
+});
+
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({
+      userId: user.id,
+      email: user.email,
+      name: user.name
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching user data', error: err.message });
+  }
+});
+
+// Add logout endpoint
+router.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out successfully' });
 });
 
 export default router;

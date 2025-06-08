@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Map from './Map';
-  
 
 export interface Citation {
     id: number;
@@ -10,17 +9,22 @@ export interface Citation {
       coordinates: [number, number];
     };
     violation: 'speeding' | 'parking' | 'signal' | 'other';
-  }
+    timestamp: string;
+    car: {
+      id: number;
+      license_plate_num: string;
+      car_color: string;
+      car_model: string;
+    };
+}
 
 function Home() {
     const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [citations, setCitations] = useState<Citation[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
   
     useEffect(() => {
       if (!navigator.geolocation) {
-        setError('Geolocation is not supported by your browser.');
+        console.error('Geolocation is not supported by your browser.');
         return;
       }
       console.log('Trying to get position')
@@ -34,7 +38,7 @@ function Home() {
         },
         (err) => {
           console.error('Geolocation error:', err);
-          setError('Failed to get location. Using default.');
+          console.error('Failed to get location. Using default.');
           setLocation({ lat: 34.068, lng: -118.453 }); // fallback
         },
         {
@@ -49,18 +53,18 @@ function Home() {
         const fetchCitations = async () => {
           if (!location) return;
     
-          setLoading(true);
           try {
-            const res = await fetch(
-              `http://localhost:3001/citations/${location.lat},${location.lng}?radius=1000`
-            );
+            const res = await fetch('/api/citations');
             const data = await res.json();
-            setCitations(data);
+            if (Array.isArray(data)) {
+              setCitations(data);
+            } else {
+              setCitations([]);
+              console.error('Citations response is not an array:', data);
+            }
           } catch (err) {
-            console.error(err);
-            setError('Failed to fetch nearby citations.');
-          } finally {
-            setLoading(false);
+            setCitations([]);
+            console.error('Failed to fetch nearby citations:', err);
           }
         };
     
