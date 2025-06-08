@@ -147,6 +147,41 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Ensure uploads directory exists
+const uploadDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
+// Set up multer disk storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const base = path.basename(file.originalname, ext);
+    const uniqueName = `${base}-${Date.now()}${ext}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
+  fileFilter: (req, file, cb) => {
+    const isValid =
+      file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
+    cb(null, isValid);
+  }
+});
+
+// POST /citations/upload -> Upload file/image
+router.post('/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const url = `/uploads/${req.file.filename}`;
+  res.status(200).json({ url });
+});
 
 export default router;
