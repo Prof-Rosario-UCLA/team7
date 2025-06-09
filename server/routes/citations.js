@@ -87,7 +87,7 @@ router.get('/:id', async (req, res) => {
 
 // GET citations closest to a certain location, formatted as "lat,lng" → GET /citations/:location
 // GET /citations/34.022,-118.289?radius=500
-router.get('/:location', async (req, res) => {
+router.get('/near/:location', async (req, res) => {
   try {
     const [latStr, lngStr] = req.params.location.split(',');
     const lat = parseFloat(latStr);

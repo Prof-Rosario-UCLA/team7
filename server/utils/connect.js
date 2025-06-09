@@ -2,16 +2,23 @@ import { Sequelize, DataTypes } from 'sequelize';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASS,
-  {
-    host: process.env.DB_HOST,
-    dialect: 'postgres',
-    logging: false
-  }
-);
+const isProd = process.env.GAE_ENV === 'standard'; // ✅ true on GAE
+
+let sequelize;
+
+if (isProd) {
+  console.log('🏠 Using DB host:', process.env.DB_HOST);
+  sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASS,
+    {
+      host: process.env.DB_HOST, // e.g., localhost
+      dialect: 'postgres',
+      logging: false,
+    }
+  );
+}
 
 // Register models
 import defineUser     from '../models/user.js';

@@ -1,6 +1,13 @@
 runtime: nodejs22
 env: standard
 instance_class: F1
+env_variables:
+  DB_USER: appuser
+  DB_PASS: password
+  DB_NAME: brakechekrdb
+  DB_HOST: /cloudsql/brakechekr:us-west1:brakechekrdb
+  INSTANCE_CONNECTION_NAME: brakechekr:us-west1:brakechekrdb
+  NODE_ENV: production
 automatic_scaling:
   max_instances: 1
   min_instances: 1

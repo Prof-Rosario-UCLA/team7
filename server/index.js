@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import sequelize from './utils/connect.js';
 import cookieParser from 'cookie-parser';
-
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes     from './routes/auth.js';
 import carRoutes      from './routes/cars.js';
 import driverRoutes   from './routes/drivers.js';
@@ -10,17 +11,28 @@ import citationRoutes from './routes/citations.js';
 import userRoutes from './routes/users.js';
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
+//Disable caching to use most updated version of frontend index.js 
+app.use((req, res, next) => {
+  if (req.url === '/' || req.url.endsWith('.html')) {
+    res.set('Cache-Control', 'no-store');
+  }
+  next();
+});
 
 const allowedOrigins = [
   'http://localhost:5173',  // Development
   'http://localhost:4173',  // Production preview
-  'http://127.0.0.1:4173'  // Alternative production preview
+  'http://127.0.0.1:4173',  // Alternative production preview
+  'https://brakechekr.uc.r.appspot.com',  // GAE deployed frontend
+  'https://brakechekr.uw.r.appspot.com'
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
+    console.log('🔎 Incoming Origin:', origin); 
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) === -1) {
@@ -45,7 +57,7 @@ const clientBuildPath = path.join(__dirname, 'client-build'); // You’ll copy d
 
 app.use(express.static(clientBuildPath));
 
-app.get('*', (req, res) => {
+app.get('/{*any}', (req, res) => {
   res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 

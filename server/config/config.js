@@ -9,5 +9,16 @@ export default {
     database: process.env.DB_NAME || 'devdb',
     host: process.env.DB_HOST || 'localhost',
     dialect: 'postgres'
+  },
+  production: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    host: `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`, // Cloud SQL Unix socket
+    dialect: 'postgres',
+    dialectOptions: {
+      // Cloud SQL over Unix socket requires this
+      socketPath: `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`
+    }
   }
 };
