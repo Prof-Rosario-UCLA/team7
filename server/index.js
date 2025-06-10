@@ -13,7 +13,7 @@ import userRoutes from './routes/users.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-//Disable caching to use most updated version of frontend index.js 
+//Disable caching to use most updated version of frontend index.js, might change
 app.use((req, res, next) => {
   if (req.url === '/' || req.url.endsWith('.html')) {
     res.set('Cache-Control', 'no-store');
