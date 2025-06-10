@@ -37,5 +37,6 @@ steps:
   - name: 'gcr.io/cloud-builders/gcloud'
     args: ['app', 'deploy', '--version=prod']
     id: 'Deploy to App Engine'
-
+options:
+  logging: CLOUD_LOGGING_ONLY
 timeout: '900s'
