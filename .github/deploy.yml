@@ -1,0 +1,47 @@
+name: Deploy to GAE and Run Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 0. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 1. Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 2. Set up Google Cloud credentials
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      # 3. Set up gcloud CLI
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+
+      # 4. Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: ./server
+        run: npm install
+
+      # 5. Run backend tests
+      - name: Run backend tests
+        working-directory: ./server
+        run: npm test
+
+      # 6. Run deploy script (includes frontend build + deploy)
+      - name: Run deploy.sh
+        run: |
+          chmod +x ./deploy.sh
+          ./deploy.sh
