@@ -12,6 +12,5 @@ To set up local db:
 To halt local db: 
 - docker-compose down  
 
-To run with GAE: 
-- cd server
-- gcloud app deploy
+To deploy:
+- sh ./deploy.sh
