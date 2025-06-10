@@ -39,7 +39,7 @@ steps:
     args: ['run', 'test']
     id: 'Test backend'
 
-  # 7. Deploy to App Engine (app.yaml is in same dir)
+  # 7. Deploy to App Engine (app.yaml is in same dir) quota increased to 1
   - name: 'gcr.io/cloud-builders/gcloud'
     args: ['app', 'deploy', '--version=prod', '--quiet']
     id: 'Deploy to App Engine'
