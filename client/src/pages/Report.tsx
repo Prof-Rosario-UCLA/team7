@@ -27,6 +27,8 @@ function Report() {
   const navigate = useNavigate();
   const [citation, setCitation] = useState({
     license_plate: '',
+    car_color: '',
+    car_model: '',
     timestamp: new Date().toISOString(),
     location: { lat: defaultCoords[0], lng: defaultCoords[1] },
     violation: 'speeding',
@@ -82,11 +84,32 @@ function Report() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setCitation((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  
+    // If the license_plate is being changed, try to auto-fill car data
+    if (name === 'license_plate') {
+      const matchingCar = cars.find(c => c.license_plate_num === value);
+      if (matchingCar) {
+        setCitation((prev) => ({
+          ...prev,
+          license_plate: value,
+          car_color: matchingCar.car_color || '',
+          car_model: matchingCar.car_model || ''
+        }));
+      } else {
+        setCitation((prev) => ({
+          ...prev,
+          license_plate: value,
+          car_color: '',
+          car_model: ''
+        }));
+      }
+    } else {
+      setCitation((prev) => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -126,13 +149,32 @@ function Report() {
 
     if (existingCar) {
       carId = existingCar.id;
+      // Only update if new info was typed by the user
+      const colorChanged = citation.car_color && citation.car_color !== existingCar.car_color;
+      const modelChanged = citation.car_model && citation.car_model !== existingCar.car_model;
+    
+      if (colorChanged || modelChanged) {
+        await fetch(`/api/cars/${carId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            car_color: colorChanged ? citation.car_color : undefined,
+            car_model: modelChanged ? citation.car_model : undefined
+          })
+        });
+      }
     } else {
       // Create new car in DB
       const newCarRes = await fetch('/api/cars', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ license_plate_num: citation.license_plate })
+        body: JSON.stringify({
+          license_plate_num: citation.license_plate,
+          car_color: citation.car_color || undefined,
+          car_model: citation.car_model || undefined
+        })
       });
 
       if (!newCarRes.ok) {
@@ -198,6 +240,28 @@ function Report() {
             required
             className="w-full p-2 rounded border border-gray-300"
           />
+        </div>
+
+        <div>
+        <label className="block mb-1 font-medium">Car Color (optional)</label>
+        <input
+          type="text"
+          name="car_color"
+          value={citation.car_color}
+          onChange={handleChange}
+          className="w-full p-2 rounded border border-gray-300"
+        />
+        </div>
+
+        <div>
+        <label className="block mb-1 font-medium">Car Model/Brand (optional)</label>
+        <input
+          type="text"
+          name="car_model"
+          value={citation.car_model}
+          onChange={handleChange}
+          className="w-full p-2 rounded border border-gray-300"
+        />
         </div>
 
         <div>

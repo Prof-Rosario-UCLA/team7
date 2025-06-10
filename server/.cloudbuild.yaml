@@ -1,6 +1,32 @@
 steps:
+  # 1. Install frontend dependencies
+  - name: 'gcr.io/cloud-builders/npm'
+    dir: 'client'
+    args: ['install']
+    id: 'Install frontend dependencies'
+
+  # 2. Build frontend
+  - name: 'gcr.io/cloud-builders/npm'
+    dir: 'client'
+    args: ['run', 'build']
+    id: 'Build frontend'
+
+  # 3. Copy frontend build to server/client-build
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo '📦 Copying frontend build to server/client-build...'
+        rm -rf server/client-build
+        mkdir -p server/client-build
+        cp -r client/dist/* server/client-build/
+        echo '✅ Frontend copied to server/client-build.'
+    id: 'Copy frontend build'
+  
   - name: 'gcr.io/cloud-builders/npm'
     args: ['install']
+    id: 'Install backend dependencies'
 
   - name: 'gcr.io/cloud-builders/npm'
     args: ['run', 'build']
@@ -10,5 +36,6 @@ steps:
 
   - name: 'gcr.io/cloud-builders/gcloud'
     args: ['app', 'deploy', '--version=prod']
+    id: 'Deploy to App Engine'
 
 timeout: '900s'

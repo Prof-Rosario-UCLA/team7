@@ -18,6 +18,17 @@ if (isProd) {
       logging: false,
     }
   );
+} else {
+  sequelize = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASS,
+    {
+      host: process.env.DB_HOST, // e.g., localhost
+      dialect: 'postgres',
+      logging: false,
+    }
+  );
 }
 
 // Register models

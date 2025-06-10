@@ -25,7 +25,6 @@ function AuthForm() {
     const payload =
       mode === 'signup' ? { email, password, name } : { email, password };
     try {
-      console.log("🔍 Fetching from:", `/api/auth/${mode}`);
       const res = await fetch(`/api/auth/${mode}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

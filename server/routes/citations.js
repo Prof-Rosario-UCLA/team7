@@ -5,9 +5,10 @@ import fs from 'fs';
 import db from '../models/index.js';
 import jwt from 'jsonwebtoken';
 import { authenticateToken } from '../middleware/auth.js';
+import { Op, fn, col, literal } from 'sequelize';
 
 const router = express.Router();
-const { Citation, User, Car } = db;
+const { Citation, User, Car, sequelize } = db;
 
 // CREATE a new citation → POST /citations
 router.post('/', authenticateToken, async (req, res) => {
@@ -98,21 +99,16 @@ router.get('/near/:location', async (req, res) => {
       return res.status(400).json({ error: 'Invalid location format. Use lat,lng' });
     }
 
-    const [results] = await sequelize.query(`
-      SELECT *
-      FROM "Citation"
-      WHERE ST_DWithin(
-        coord,
-        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
-        :radius
-      )
-      ORDER BY ST_Distance(
-        coord,
-        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
-      )
-      LIMIT 50
-    `, {
-      replacements: { lat, lng, radius },
+    const results = await Citation.findAll({
+      where: literal(`ST_DWithin(
+        location,
+        ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
+        ${radius}
+      )`),
+      include: [
+        { model: User, as: 'user', attributes: ['id', 'email', 'name'] },
+        { model: Car,  as: 'car',  attributes: ['id', 'license_plate_num', 'car_color', 'car_model'] }
+      ]
     });
 
     res.json(results);
