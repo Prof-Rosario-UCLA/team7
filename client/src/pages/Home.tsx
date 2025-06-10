@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import CookieConsent from "react-cookie-consent";
 import Navbar from './Navbar';
 import Map from './Map';
 
@@ -79,7 +80,20 @@ function Home() {
             ) : (
                 <p className="p-4 text-text">Getting your location...</p>
             )}
-        </div>
+        <CookieConsent
+        location="bottom"
+        buttonText="I understand"
+        cookieName="myAppCookieConsent"
+        style={{ background: "#111827" }}
+        buttonStyle={{ color: "#f7d060", fontSize: "13px" }}
+        expires={150}
+      >
+        This website uses cookies to enhance the user experience.{" "}
+        <a href="/privacy" style={{ color: "#ffd" }}>
+          Learn more
+        </a>
+      </CookieConsent>
+      </div>
     )
 }
 
