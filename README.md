@@ -12,5 +12,5 @@ To set up local db:
 To halt local db: 
 - docker-compose down  
 
-To deploy:
+To deploy (or wait for GHA):
 - sh ./deploy.sh
