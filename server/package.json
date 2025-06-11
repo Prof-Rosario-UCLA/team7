@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "mocha --timeout 10000 --exit"
+    "test": "npm run lint"
   },
   "repository": {
     "type": "git",
@@ -35,7 +35,10 @@
   },
   "devDependencies": {
     "chai": "^5.2.0",
-    "mocha": "^10.0.0"
+    "eslint": "^9.28.0",
+    "mocha": "^10.8.2",
+    "sinon": "^20.0.0",
+    "supertest": "^7.1.1"
   },
   "type": "module"
 }
