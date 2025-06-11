@@ -242,12 +242,12 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
     };
   
     return (
-      <div className="h-screen overflow-hidden flex items-center justify-center bg-[var(--color-background)] p-6">
+      <main className="h-screen overflow-hidden flex items-center justify-center bg-[var(--color-background)] p-6">
         <form
           onSubmit={handleSubmit}
           className="h-full max-h-[90vh] overflow-y-auto w-full max-w-xl bg-white p-8 rounded-xl shadow-lg space-y-6 text-[var(--color-text)]"
         >
-          <div className="flex justify-between items-center">
+          <header className="flex justify-between items-center">
             <button
               type="button"
               onClick={onClose}
@@ -257,9 +257,9 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
             </button>
             <h2 className="text-2xl font-bold text-[var(--color-primary)]">Submit a Citation</h2>
             <div className="w-[52px]"></div>
-          </div>
+          </header>
   
-          <div>
+          <fieldset>
             <label className="block mb-1 font-medium">License Plate</label>
             <input
               type="text"
@@ -269,9 +269,9 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
               required
               className="w-full p-2 rounded border border-gray-300"
             />
-          </div>
+          </fieldset>
   
-          <div>
+          <fieldset>
           <label className="block mb-1 font-medium">Car Color (optional)</label>
           <input
             type="text"
@@ -280,9 +280,9 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
             onChange={handleChange}
             className="w-full p-2 rounded border border-gray-300"
           />
-          </div>
+          </fieldset>
   
-          <div>
+          <fieldset>
           <label className="block mb-1 font-medium">Car Model/Brand (optional)</label>
           <input
             type="text"
@@ -291,9 +291,9 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
             onChange={handleChange}
             className="w-full p-2 rounded border border-gray-300"
           />
-          </div>
+          </fieldset>
   
-          <div>
+          <fieldset>
             <label className="block mb-1 font-medium">Violation</label>
             <select
               name="violation"
@@ -307,9 +307,9 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
               <option value="signal">Signal</option>
               <option value="other">Other</option>
             </select>
-          </div>
+          </fieldset>
   
-          <div>
+          <fieldset>
             <label className="block mb-1 font-medium">Additional Notes</label>
             <textarea
               name="notes"
@@ -318,9 +318,9 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
               className="w-full p-2 rounded border border-gray-300"
               rows={4}
             />
-          </div>
+          </fieldset>
   
-          <div>
+          <fieldset>
               <label className="block mb-2 font-medium">Upload Image/Video (optional)</label>
               <div className="flex items-center justify-between gap-4 border border-dashed border-gray-400 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
               <input
@@ -340,7 +340,7 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
                   {file ? file.name : 'No file chosen'}
               </span>
               </div>
-          </div>
+          </fieldset>
   
           <button
           type="button"
@@ -350,7 +350,7 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
           📍 Use My Location
           </button>
   
-          <div>
+          <section>
             <label className="block mb-2 font-medium">Pinpoint Location</label>
             <MapContainer key={mapCenter.join(',')} center={mapCenter} zoom={13} className="h-64 w-full rounded-md">
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -368,7 +368,7 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
             <p className="text-sm mt-2 text-gray-600">
               Click on the map to mark where the citation occurred.
             </p>
-          </div>
+          </section>
   
           <button
             type="submit"
@@ -377,6 +377,6 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
             Submit Citation
           </button>
         </form>
-      </div>
+      </main>
     );   
 }
