@@ -1,6 +1,7 @@
 // ReportForm.tsx
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { fetchWithLocalCache } from '../utils/cache';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -41,16 +42,17 @@ export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () =
     const [cars, setCars] = useState<Car[]>([]);
   
     useEffect(() => {
-      fetch('/api/cars')
-        .then(res => res.json())
-        .then((data: Car[]) => {
-          console.log('Fetched cars:', data);
-          setCars(Array.isArray(data) ? data : []);
-        })
-        .catch((err) => {
-          console.error('Failed to fetch cars:', err);
-          setCars([]);
-        });
+        const loadCars = async () => {
+          try {
+            const data = await fetchWithLocalCache<Car[]>('cars-list', '/api/cars', 10 * 60 * 1000); // 10 min cache
+            setCars(Array.isArray(data) ? data : []);
+          } catch (err) {
+            console.error('Failed to fetch cars:', err);
+            setCars([]);
+          }
+        };
+      
+        loadCars();
     }, []);
   
     const getUserLocation = () => {

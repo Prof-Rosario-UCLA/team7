@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import Map from './Map';
 import CitationList from './CitationList';
 import ReportForm from './ReportForm';
+import { fetchWithLocalCache } from '../utils/cache';
 
 export interface Citation {
     id: number;
@@ -32,35 +33,27 @@ function Home() {
     const [showReportModal, setShowReportModal] = useState(false);
 
     const fetchCitations = async (lat: number, lng: number, radiusMeters?: number) => {
-      try {
         const url = radiusMeters
           ? `/api/citations/near/${lat},${lng}?radius=${radiusMeters}`
           : `/api/citations`;
-        console.log('🔍 Fetching citations from:', url);
-        
-        const res = await fetch(url);
-        if (!res.ok) {
-          console.error('Failed to fetch citations:', res.status, res.statusText);
-          const errorText = await res.text();
-          console.error('Error details:', errorText);
-          setCitations([]);
-          return;
-        }
 
-        const data = await res.json();
-        console.log('📊 Received citations data:', data);
+        const cacheKey = radiusMeters
+        ? `citations-${lat},${lng}-${radiusMeters}`
+        : `citations-all`;
         
-        if (Array.isArray(data)) {
-          console.log(`✅ Found ${data.length} citations`);
-          setCitations(data);
-        } else {
-          console.error('❌ Citations response is not an array:', data);
+        try {
+          const data = await fetchWithLocalCache<Citation[]>(cacheKey, url);
+          if (Array.isArray(data)) {
+            console.log(`✅ Loaded ${data.length} citations from cache or network`);
+            setCitations(data);
+          } else {
+            console.error('❌ Data not in expected format:', data);
+            setCitations([]);
+          }
+        } catch (err) {
+          console.error('❌ Error fetching citations:', err);
           setCitations([]);
         }
-      } catch (err) {
-        console.error('❌ Failed to fetch citations:', err);
-        setCitations([]);
-      }
     };
 
     useEffect(() => {
