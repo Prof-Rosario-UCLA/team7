@@ -187,8 +187,18 @@ function Report() {
     
     // Add the media file if present
     if (file) {
-      console.log('📎 Adding file to FormData:', file.name, file.type, file.size);
+      console.log('📎 Adding file to FormData:', {
+        name: file.name,
+        type: file.type,
+        size: file.size
+      });
       formData.append('media', file);
+      
+      // Log FormData contents for debugging
+      console.log('🔍 FormData contents:');
+      for (const pair of formData.entries()) {
+        console.log(pair[0], pair[1] instanceof File ? `File: ${pair[1].name}` : pair[1]);
+      }
     }
     
     // Add all other citation data

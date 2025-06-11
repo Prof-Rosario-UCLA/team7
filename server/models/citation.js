@@ -5,7 +5,7 @@ const Citation = (sequelize, DataTypes) => {
     'Citation',
     {
       blob: {
-        type: DataTypes.BLOB('long'),
+        type: DataTypes.BLOB,
         allowNull: true,
         comment: 'Binary data for uploaded media'
       },

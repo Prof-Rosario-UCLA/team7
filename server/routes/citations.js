@@ -27,12 +27,20 @@ router.post('/', authenticateToken, upload.single('media'), async (req, res) => 
     console.log('📝 Creating new citation');
     console.log('👤 User:', req.user);
     console.log('🚗 Car ID:', req.body.car_id);
-    console.log('📎 File:', req.file ? {
-      originalname: req.file.originalname,
-      mimetype: req.file.mimetype,
-      size: req.file.size,
-      buffer: req.file.buffer ? 'Buffer present' : 'No buffer'
-    } : 'No file');
+    
+    // Detailed file logging
+    if (req.file) {
+      console.log('📎 File details:', {
+        fieldname: req.file.fieldname,
+        originalname: req.file.originalname,
+        encoding: req.file.encoding,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        buffer: req.file.buffer ? `Buffer(${req.file.buffer.length} bytes)` : 'No buffer'
+      });
+    } else {
+      console.log('❌ No file uploaded');
+    }
 
     const {
       car_id,
@@ -69,11 +77,8 @@ router.post('/', authenticateToken, upload.single('media'), async (req, res) => 
     console.log('✅ User found:', user.id);
     console.log('✅ Car found:', car.id);
 
-    // Create citation with media if present
-    const newCitation = await Citation.create({
-      blob: req.file ? req.file.buffer : null,
-      media_type: req.file ? req.file.mimetype : null,
-      media_filename: req.file ? req.file.originalname : null,
+    // Prepare citation data
+    const citationData = {
       user_id: user_id,
       car_id: car_id,
       timestamp: timestamp ? new Date(timestamp) : new Date(),
@@ -81,13 +86,38 @@ router.post('/', authenticateToken, upload.single('media'), async (req, res) => 
       status,
       violation,
       notes: notes || null
+    };
+
+    // Add media data if present
+    if (req.file && req.file.buffer) {
+      citationData.blob = req.file.buffer;
+      citationData.media_type = req.file.mimetype;
+      citationData.media_filename = req.file.originalname;
+      console.log('📎 Adding media data:', {
+        filename: req.file.originalname,
+        type: req.file.mimetype,
+        size: req.file.buffer.length
+      });
+    }
+
+    // Create citation
+    console.log('Creating citation with data:', {
+      ...citationData,
+      blob: citationData.blob ? `Buffer(${citationData.blob.length} bytes)` : null
     });
 
-    console.log('✅ Citation created:', {
-      id: newCitation.id,
-      hasMedia: !!req.file,
-      location: parsedLocation
-    });
+    const newCitation = await Citation.create(citationData);
+
+    // Verify media was saved
+    if (req.file) {
+      const savedCitation = await Citation.findByPk(newCitation.id);
+      console.log('Verification of saved media:', {
+        hasBlob: !!savedCitation.blob,
+        blobSize: savedCitation.blob ? savedCitation.blob.length : 0,
+        mediaType: savedCitation.media_type,
+        filename: savedCitation.media_filename
+      });
+    }
 
     // Don't send the blob in the response
     const citationResponse = newCitation.toJSON();
