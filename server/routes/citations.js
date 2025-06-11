@@ -24,8 +24,15 @@ const upload = multer({
 // CREATE a new citation with media → POST /citations
 router.post('/', authenticateToken, upload.single('media'), async (req, res) => {
   try {
-    console.log('req.user:', req.user);
-    console.log('car_id from body:', req.body.car_id);
+    console.log('📝 Creating new citation');
+    console.log('👤 User:', req.user);
+    console.log('🚗 Car ID:', req.body.car_id);
+    console.log('📎 File:', req.file ? {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      buffer: req.file.buffer ? 'Buffer present' : 'No buffer'
+    } : 'No file');
 
     const {
       car_id,
@@ -36,17 +43,31 @@ router.post('/', authenticateToken, upload.single('media'), async (req, res) => 
       notes
     } = req.body;
 
+    console.log('📍 Location:', location);
+    
+    // Parse location if it's a string
+    let parsedLocation = location;
+    if (typeof location === 'string') {
+      try {
+        parsedLocation = JSON.parse(location);
+      } catch (e) {
+        console.error('Failed to parse location:', e);
+        return res.status(400).json({ error: 'Invalid location format' });
+      }
+    }
+
     const user_id = req.user.userId;
 
     // Validate FK existence:
     const user = await User.findByPk(user_id);
     const car = await Car.findByPk(car_id);
     if (!user || !car) {
+      console.error('❌ Invalid user_id or car_id:', { user_id, car_id });
       return res.status(400).json({ error: 'Invalid user_id or car_id' });
     }
 
-    console.log('user found:', user ? user.id : null);
-    console.log('car found:', car ? car.id : null);
+    console.log('✅ User found:', user.id);
+    console.log('✅ Car found:', car.id);
 
     // Create citation with media if present
     const newCitation = await Citation.create({
@@ -56,10 +77,16 @@ router.post('/', authenticateToken, upload.single('media'), async (req, res) => 
       user_id: user_id,
       car_id: car_id,
       timestamp: timestamp ? new Date(timestamp) : new Date(),
-      location,
+      location: parsedLocation,
       status,
       violation,
       notes: notes || null
+    });
+
+    console.log('✅ Citation created:', {
+      id: newCitation.id,
+      hasMedia: !!req.file,
+      location: parsedLocation
     });
 
     // Don't send the blob in the response
@@ -68,6 +95,7 @@ router.post('/', authenticateToken, upload.single('media'), async (req, res) => 
     
     return res.status(201).json(citationResponse);
   } catch (err) {
+    console.error('❌ Error creating citation:', err);
     return res.status(500).json({ error: err.message });
   }
 });

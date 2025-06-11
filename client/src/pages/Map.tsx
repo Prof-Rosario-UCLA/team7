@@ -3,7 +3,6 @@ import 'leaflet/dist/leaflet.css';
 import '../utils/leaflet-icons';
 import type { Citation } from './Home';
 
-// Add custom styles to fix z-index issues with Leaflet
 import { useEffect } from 'react';
 
 interface MapProps {
@@ -35,9 +34,16 @@ function Map({ citations, center }: MapProps) {
     };
 
     const renderMedia = (citation: Citation) => {
-      if (!citation.media_type) return null;
+      console.log('🖼️ Rendering media for citation:', citation.id);
+      console.log('Media type:', citation.media_type);
+      
+      if (!citation.media_type) {
+        console.log('No media type found for citation:', citation.id);
+        return null;
+      }
 
       const mediaUrl = `/api/citations/${citation.id}/media`;
+      console.log('Media URL:', mediaUrl);
 
       if (citation.media_type.startsWith('image/')) {
         return (
@@ -45,6 +51,10 @@ function Map({ citations, center }: MapProps) {
             src={mediaUrl} 
             alt="Citation evidence" 
             className="w-full h-auto max-h-48 object-cover rounded-lg mb-2"
+            onError={(e) => {
+              console.error('Failed to load image:', e);
+              e.currentTarget.style.display = 'none';
+            }}
           />
         );
       } else if (citation.media_type.startsWith('video/')) {
@@ -53,6 +63,10 @@ function Map({ citations, center }: MapProps) {
             src={mediaUrl} 
             controls 
             className="w-full h-auto max-h-48 rounded-lg mb-2"
+            onError={(e) => {
+              console.error('Failed to load video:', e);
+              e.currentTarget.style.display = 'none';
+            }}
           >
             Your browser does not support the video tag.
           </video>

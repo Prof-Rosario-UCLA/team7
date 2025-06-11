@@ -36,18 +36,30 @@ function Home() {
         const url = radiusMeters
           ? `/api/citations/near/${lat},${lng}?radius=${radiusMeters}`
           : `/api/citations`;
+        console.log('🔍 Fetching citations from:', url);
+        
         const res = await fetch(url);
+        if (!res.ok) {
+          console.error('Failed to fetch citations:', res.status, res.statusText);
+          const errorText = await res.text();
+          console.error('Error details:', errorText);
+          setCitations([]);
+          return;
+        }
+
         const data = await res.json();
-        console.log(data);
+        console.log('📊 Received citations data:', data);
+        
         if (Array.isArray(data)) {
+          console.log(`✅ Found ${data.length} citations`);
           setCitations(data);
         } else {
+          console.error('❌ Citations response is not an array:', data);
           setCitations([]);
-          console.error('Citations response is not an array:', data);
         }
       } catch (err) {
+        console.error('❌ Failed to fetch citations:', err);
         setCitations([]);
-        console.error('Failed to fetch citations:', err);
       }
     };
 

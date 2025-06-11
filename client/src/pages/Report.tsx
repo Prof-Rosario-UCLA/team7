@@ -127,6 +127,7 @@ function Report() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('📝 Starting citation submission');
 
     let carId: number | undefined;
     const existingCar = cars.find(c => c.license_plate_num === citation.license_plate);
@@ -138,7 +139,7 @@ function Report() {
       const modelChanged = citation.car_model && citation.car_model !== existingCar.car_model;
     
       if (colorChanged || modelChanged) {
-        await fetch(`/api/cars/${carId}`, {
+        const carUpdateRes = await fetch(`/api/cars/${carId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -147,6 +148,10 @@ function Report() {
             car_model: modelChanged ? citation.car_model : undefined
           })
         });
+
+        if (!carUpdateRes.ok) {
+          console.error('Failed to update car:', await carUpdateRes.text());
+        }
       }
     } else {
       // Create new car in DB
@@ -162,7 +167,9 @@ function Report() {
       });
 
       if (!newCarRes.ok) {
-        alert('Failed to create car');
+        const errorText = await newCarRes.text();
+        console.error('Failed to create car:', errorText);
+        alert('Failed to create car: ' + errorText);
         return;
       }
 
@@ -180,36 +187,49 @@ function Report() {
     
     // Add the media file if present
     if (file) {
+      console.log('📎 Adding file to FormData:', file.name, file.type, file.size);
       formData.append('media', file);
     }
     
     // Add all other citation data
-    formData.append('car_id', carId.toString());
-    formData.append('timestamp', citation.timestamp);
-    formData.append('location', JSON.stringify({
+    const locationData = {
       type: 'Point',
       coordinates: [citation.location.lng, citation.location.lat]
-    }));
+    };
+    
+    console.log('📍 Location data:', locationData);
+    
+    formData.append('car_id', carId.toString());
+    formData.append('timestamp', citation.timestamp);
+    formData.append('location', JSON.stringify(locationData));
     formData.append('status', 'submitted');
     formData.append('violation', citation.violation);
     formData.append('notes', citation.notes);
 
     try {
+      console.log('🚀 Sending citation data to server');
       const res = await fetch('/api/citations', {
         method: 'POST',
         credentials: 'include',
-        body: formData // No Content-Type header needed, browser will set it with boundary
+        body: formData
       });
 
-      if (res.ok) {
-        alert('Citation submitted!');
-        navigate("/");
-      } else {
-        const errorData = await res.json().catch(() => null);
-        alert(`Submission failed: ${errorData?.message || 'Unknown error'}`);
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Failed to submit citation:', errorText);
+        alert('Failed to submit citation: ' + errorText);
+        return;
       }
+
+      const newCitation = await res.json();
+      console.log('✅ Citation created:', newCitation);
+
+      alert('Citation submitted!');
+      
+      // Force a reload of the page to refresh the map
+      window.location.href = '/';
     } catch (error) {
-      console.error('Error submitting citation:', error);
+      console.error('❌ Error submitting citation:', error);
       alert('Failed to submit citation. Please try again.');
     }
   };
