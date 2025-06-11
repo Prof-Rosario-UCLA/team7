@@ -34,8 +34,13 @@ jobs:
       - name: Install backend dependencies
         working-directory: ./server
         run: npm install
+      
+      # 5. Run tests
+      - name: Run tests
+        working-directory: ./server
+        run: npm test
 
-      # 5. Run deploy script (includes frontend build + deploy)
+      # 6. Run deploy script (includes frontend build + deploy)
       - name: Run deploy.sh
         run: |
           chmod +x ./deploy.sh
