@@ -101,7 +101,7 @@ function Home() {
     };
 
     return (
-      <main>
+      <main className="pb-16">
       <Navbar onReportClick={() => setShowReportModal(true)} />
       <header className="flex justify-between items-center px-4 py-2">
         <button
@@ -110,24 +110,25 @@ function Home() {
         >
           Switch to {view === 'map' ? 'List' : 'Map'} View
         </button>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+          <input
+            type="number"
+            placeholder="Max distance (km)"
+            className="border px-2 py-1 rounded ml-4"
+            value={radiusKm}
+            onChange={(e) => {
+              const val = e.target.value;
+              setRadiusKm(val === '' ? '' : Number(val));
+            }}
+          />
 
-        <input
-          type="number"
-          placeholder="Max distance (km)"
-          className="border px-2 py-1 rounded ml-4"
-          value={radiusKm}
-          onChange={(e) => {
-            const val = e.target.value;
-            setRadiusKm(val === '' ? '' : Number(val));
-          }}
-        />
-
-        <button
-          onClick={handleSearch}
-          className="ml-2 bg-accent text-white px-4 py-1 rounded hover:bg-blue-700"
-        >
-          Search
-        </button>
+          <button
+            onClick={handleSearch}
+            className="ml-2 bg-accent text-white px-4 py-1 rounded hover:bg-blue-700"
+          >
+            Search
+          </button>
+        </div>
       </header>
 
       <section aria-label="Citation View" className="relative">
