@@ -3,6 +3,7 @@ import CookieConsent from "react-cookie-consent";
 import Navbar from './Navbar';
 import Map from './Map';
 import CitationList from './CitationList';
+import ReportForm from './ReportForm';
 
 export interface Citation {
     id: number;
@@ -26,6 +27,7 @@ function Home() {
     const [citations, setCitations] = useState<Citation[]>([]);
     const [view, setView] = useState<'map' | 'list'>('map');
     const [radiusKm, setRadiusKm] = useState<number | ''>(''); 
+    const [showReportModal, setShowReportModal] = useState(false);
 
     const fetchCitations = async (lat: number, lng: number, radiusMeters?: number) => {
       try {
@@ -86,7 +88,7 @@ function Home() {
 
     return (
       <div>
-        <Navbar></Navbar>
+        <Navbar onReportClick={() => setShowReportModal(true)}></Navbar>
         <div className="flex justify-between items-center px-4 py-2">
           <button
             onClick={() => setView(view === 'map' ? 'list' : 'map')}
@@ -119,6 +121,13 @@ function Home() {
           )
           ) : (
             <p className="p-4">Getting your location...</p>
+        )}
+        {showReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <ReportForm onClose={() => setShowReportModal(false)} />
+          </div>
+        </div>
         )}
         <CookieConsent
         location="bottom"

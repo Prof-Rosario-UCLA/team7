@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-function Navbar() {
+function Navbar({ onReportClick }: { onReportClick: () => void }) {
   return (
     <nav className="bg-background text-text px-6 py-4 shadow-md">
       <ul className="flex items-center justify-between max-w-5xl mx-auto">
@@ -11,12 +11,12 @@ function Navbar() {
         </li>
 
         <li>
-          <Link
-            to="/report"
+        <button
+            onClick={onReportClick}
             className="bg-primary text-white font-medium px-4 py-2 rounded-lg hover:bg-secondary transition"
           >
             + Make a report!
-          </Link>
+          </button>
         </li>
       </ul>
     </nav>
