@@ -59,78 +59,83 @@ function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md border border-accent">
+  <main className="min-h-screen flex items-center justify-center bg-background px-4">
+    <section className="bg-white p-8 rounded-xl shadow-md w-full max-w-md border border-accent">
+      <header>
         <h2 className="text-2xl font-bold mb-6 text-center text-primary">
           {mode === 'login' ? 'Log In' : 'Create Account'}
         </h2>
-        {errorMsg && (
-          <div className="mb-4 text-sm text-text font-medium text-center">
-            {errorMsg}
+      </header>
+
+      {errorMsg && (
+        <p className="mb-4 text-sm text-text font-medium text-center" role="alert">
+          {errorMsg}
+        </p>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {mode === 'signup' && (
+          <div>
+            <label className="block text-sm font-medium text-text" htmlFor="name">
+              Username
+            </label>
+            <input
+              id="name"
+              type="text"
+              className="mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === 'signup' && (
-            <div>
-              <label className="block text-sm font-medium text-text" htmlFor="name">
-                Username
-              </label>
-              <input
-                id="name"
-                type="text"
-                className="mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-          )}
+        <div>
+          <label className="block text-sm font-medium text-text" htmlFor="email">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            className="mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-text" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-text" htmlFor="password">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            className="mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-text" htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              className="mt-1 w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+        <button
+          type="submit"
+          className="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-secondary transition"
+        >
+          {mode === 'login' ? 'Log In' : 'Create Account'}
+        </button>
+      </form>
 
-          <button
-            type="submit"
-            className="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-secondary transition"
-          >
-            {mode === 'login' ? 'Log In' : 'Create Account'}
-          </button>
-        </form>
-
+      <footer>
         <p className="mt-4 text-sm text-center text-text">
           {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
           <button onClick={toggleMode} className="text-accent hover:underline font-medium">
             {mode === 'login' ? 'Sign up' : 'Log in'}
           </button>
         </p>
-      </div>
-    </div>
+      </footer>
+    </section>
+  </main>
   );
 }
 

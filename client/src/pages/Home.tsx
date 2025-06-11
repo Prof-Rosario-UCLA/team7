@@ -101,16 +101,17 @@ function Home() {
     };
 
     return (
-      <div>
-        <Navbar onReportClick={() => setShowReportModal(true)}></Navbar>
-        <div className="flex justify-between items-center px-4 py-2">
-          <button
-            onClick={() => setView(view === 'map' ? 'list' : 'map')}
-            className="bg-secondary text-white px-4 py-2 rounded"
-          >
-            Switch to {view === 'map' ? 'List' : 'Map'} View
-          </button>
-          <input
+      <main>
+      <Navbar onReportClick={() => setShowReportModal(true)} />
+      <header className="flex justify-between items-center px-4 py-2">
+        <button
+          onClick={() => setView(view === 'map' ? 'list' : 'map')}
+          className="bg-secondary text-white px-4 py-2 rounded"
+        >
+          Switch to {view === 'map' ? 'List' : 'Map'} View
+        </button>
+
+        <input
           type="number"
           placeholder="Max distance (km)"
           className="border px-2 py-1 rounded ml-4"
@@ -119,52 +120,63 @@ function Home() {
             const val = e.target.value;
             setRadiusKm(val === '' ? '' : Number(val));
           }}
-          />
-          <button
-            onClick={handleSearch}
-            className="ml-2 bg-accent text-white px-4 py-1 rounded hover:bg-blue-700"
-          >
-            Search
-          </button>
-        </div>
+        />
+
+        <button
+          onClick={handleSearch}
+          className="ml-2 bg-accent text-white px-4 py-1 rounded hover:bg-blue-700"
+        >
+          Search
+        </button>
+      </header>
+
+      <section aria-label="Citation View" className="relative">
         {location ? (
           view === 'map' ? (
             <Map citations={citations} center={location} />
           ) : (
             <CitationList citations={citations} />
           )
-          ) : (
-            <p className="p-4">Getting your location...</p>
+        ) : (
+          <p className="p-4">Getting your location...</p>
         )}
-        {showReportModal && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
-            <div className="relative bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
-              <ReportForm 
-                onClose={() => setShowReportModal(false)} 
-                onSubmitSuccess={() => {
-                  setShowReportModal(false);
-                  if (location) {
-                    fetchCitations(location.lat, location.lng);
-                  }
-                }}
-              />
-            </div>
+      </section>
+
+      {showReportModal && (
+        <section
+          role="dialog"
+          aria-modal="true"
+          aria-label="Submit a citation"
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-300"
+        >
+          <div className="relative bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-lg transform transition-all duration-300 scale-100">
+            <ReportForm
+              onClose={() => setShowReportModal(false)}
+              onSubmitSuccess={() => {
+                setShowReportModal(false);
+                if (location) fetchCitations(location.lat, location.lng);
+              }}
+            />
           </div>
-        )}
+        </section>
+      )}
+
+      <footer>
         <CookieConsent
-        location="bottom"
-        buttonText="I understand"
-        buttonClasses="bg-secondary-500 hover:bg-accent-700 text-white font-bold py-2 px-4 rounded-full"
-        cookieName="myAppCookieConsent"
-        style={{ background: "#98d8aa" }}
-        expires={150}
-      >
-        This website uses cookies to enhance the user experience.{" "}
-        <a href="/privacy" style={{ color: "#111827" }}>
-          Learn more
-        </a>
-      </CookieConsent>
-      </div>
+          location="bottom"
+          buttonText="I understand"
+          buttonClasses="bg-secondary-500 hover:bg-accent-700 text-white font-bold py-2 px-4 rounded-full"
+          cookieName="myAppCookieConsent"
+          style={{ background: "#98d8aa" }}
+          expires={150}
+        >
+          This website uses cookies to enhance the user experience.{" "}
+          <a href="/privacy" style={{ color: "#111827" }}>
+            Learn more
+          </a>
+        </CookieConsent>
+      </footer>
+    </main>
     )
 }
 
