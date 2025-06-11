@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS citations (
   car_id INTEGER,
   timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   location GEOGRAPHY(POINT, 4326) NOT NULL,
-  status enum_citations_status NOT NULL DEFAULT 'submitted',
-  violation enum_citations_violation NOT NULL,
+  status VARCHAR(255) NOT NULL DEFAULT 'submitted',
+  violation VARCHAR(255) NOT NULL,
   notes TEXT,
   "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL,
   "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL

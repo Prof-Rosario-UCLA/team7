@@ -47,13 +47,19 @@ const Citation = (sequelize, DataTypes) => {
         allowNull: false
       },
       status: {
-        type: DataTypes.ENUM('submitted', 'rejected', 'accepted'),
+        type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'submitted'
+        defaultValue: 'submitted',
+        validate: {
+          isIn: [['submitted', 'rejected', 'accepted']]
+        }
       },
       violation: {
-        type: DataTypes.ENUM('speeding', 'parking', 'signal', 'other'),
-        allowNull: false
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          isIn: [['speeding', 'parking', 'signal', 'other']]
+        }
       },
       notes: {
         type: DataTypes.TEXT,
