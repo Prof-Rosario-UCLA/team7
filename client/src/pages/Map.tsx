@@ -3,6 +3,9 @@ import 'leaflet/dist/leaflet.css';
 import '../utils/leaflet-icons';
 import type { Citation } from './Home';
 
+// Add custom styles to fix z-index issues with Leaflet
+import { useEffect } from 'react';
+
 interface MapProps {
     citations: Citation[];
     center: { lat: number; lng: number };
@@ -11,6 +14,20 @@ interface MapProps {
 function Map({ citations, center }: MapProps) {
     console.log('Rendering map with center:', center);
     console.log('Citations:', citations);
+
+    // Add useEffect to fix z-index
+    useEffect(() => {
+      // Fix z-index for map tiles
+      const mapPane = document.querySelector('.leaflet-map-pane') as HTMLElement;
+      if (mapPane) {
+        mapPane.style.zIndex = '0';
+      }
+      // Fix z-index for map controls
+      const mapControls = document.querySelector('.leaflet-control-container') as HTMLElement;
+      if (mapControls) {
+        mapControls.style.zIndex = '1';
+      }
+    }, []);
 
     const formatDate = (timestamp: string) => {
       const date = new Date(timestamp);
@@ -45,7 +62,7 @@ function Map({ citations, center }: MapProps) {
     };
 
     return (
-      <div className="h-[500px] w-full">
+      <div className="h-[500px] w-full relative" style={{ zIndex: 0 }}>
         <MapContainer center={center} zoom={14} scrollWheelZoom={true} className="h-full w-full">
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -183,6 +183,7 @@ function Report() {
       formData.append('media', file);
     }
     
+    // Add all other citation data
     formData.append('car_id', carId.toString());
     formData.append('timestamp', citation.timestamp);
     formData.append('location', JSON.stringify({
@@ -193,17 +194,23 @@ function Report() {
     formData.append('violation', citation.violation);
     formData.append('notes', citation.notes);
 
-    const res = await fetch('/api/citations', {
-      method: 'POST',
-      credentials: 'include',
-      body: formData
-    });
+    try {
+      const res = await fetch('/api/citations', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData // No Content-Type header needed, browser will set it with boundary
+      });
 
-    if (res.ok) {
-      alert('Citation submitted!');
-      navigate("/");
-    } else {
-      alert('Submission failed');
+      if (res.ok) {
+        alert('Citation submitted!');
+        navigate("/");
+      } else {
+        const errorData = await res.json().catch(() => null);
+        alert(`Submission failed: ${errorData?.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error submitting citation:', error);
+      alert('Failed to submit citation. Please try again.');
     }
   };
 
@@ -288,12 +295,24 @@ function Report() {
 
         <div>
           <label className="block mb-1 font-medium">Upload Media (optional)</label>
-          <input
-            type="file"
-            accept="image/*,video/*"
-            onChange={handleFileChange}
-            className="w-full p-2 rounded border border-gray-300"
-          />
+          <div className="flex items-center justify-between gap-4 border border-dashed border-gray-400 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
+            <input
+              type="file"
+              accept="image/*,video/*"
+              id="file-upload"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <label
+              htmlFor="file-upload"
+              className="text-[var(--color-primary)] font-semibold cursor-pointer"
+            >
+              {file ? 'Change File' : 'Choose File'}
+            </label>
+            <span className="text-sm text-gray-700 truncate w-full text-right">
+              {file ? file.name : 'No file chosen'}
+            </span>
+          </div>
           <p className="text-sm text-gray-500 mt-1">
             Supported formats: Images (JPEG, PNG, etc.) and Videos (MP4, etc.)
           </p>
@@ -307,7 +326,7 @@ function Report() {
         📍 Use My Location
         </button>
 
-        <div>
+        <div className="relative" style={{ zIndex: 0 }}>
           <label className="block mb-2 font-medium">Pinpoint Location</label>
           <MapContainer key={mapCenter.join(',')} center={mapCenter} zoom={13} className="h-64 w-full rounded-md">
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

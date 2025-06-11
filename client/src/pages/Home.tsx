@@ -125,11 +125,11 @@ function Home() {
             <p className="p-4">Getting your location...</p>
         )}
         {showReportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="relative bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <ReportForm onClose={() => setShowReportModal(false)} />
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
+            <div className="relative bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
+              <ReportForm onClose={() => setShowReportModal(false)} />
+            </div>
           </div>
-        </div>
         )}
         <CookieConsent
         location="bottom"
