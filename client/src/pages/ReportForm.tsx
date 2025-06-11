@@ -126,22 +126,7 @@ export default function ReportForm({ onClose }: { onClose: () => void }) {
   
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-  
-      let blobUrl = '';
-      if (file) {
-        const formData = new FormData();
-        formData.append('file', file);
-  
-        const uploadRes = await fetch('/api/citations/upload', {
-          method: 'POST',
-          body: formData
-        });
-  
-        if (uploadRes.ok) {
-          const { url } = await uploadRes.json();
-          blobUrl = url;
-        }
-      }
+      console.log('📝 Starting citation submission');
   
       let carId: number | undefined;
       const existingCar = cars.find(c => c.license_plate_num === citation.license_plate);
@@ -153,7 +138,7 @@ export default function ReportForm({ onClose }: { onClose: () => void }) {
         const modelChanged = citation.car_model && citation.car_model !== existingCar.car_model;
       
         if (colorChanged || modelChanged) {
-          await fetch(`/api/cars/${carId}`, {
+          const carUpdateRes = await fetch(`/api/cars/${carId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -162,6 +147,10 @@ export default function ReportForm({ onClose }: { onClose: () => void }) {
               car_model: modelChanged ? citation.car_model : undefined
             })
           });
+  
+          if (!carUpdateRes.ok) {
+            console.error('Failed to update car:', await carUpdateRes.text());
+          }
         }
       } else {
         // Create new car in DB
@@ -177,7 +166,9 @@ export default function ReportForm({ onClose }: { onClose: () => void }) {
         });
   
         if (!newCarRes.ok) {
-          alert('Failed to create car');
+          const errorText = await newCarRes.text();
+          console.error('Failed to create car:', errorText);
+          alert('Failed to create car: ' + errorText);
           return;
         }
   
@@ -185,29 +176,68 @@ export default function ReportForm({ onClose }: { onClose: () => void }) {
         carId = newCar.id;
       }
   
-      const payload = {
-        ...citation,
-        car_id: carId,
-        blob: blobUrl,
-        status: 'submitted',
-        location: {
-          type: 'Point',
-          coordinates: [citation.location.lng, citation.location.lat]
+      if (!carId) {
+        alert('Failed to get car ID');
+        return;
+      }
+  
+      // Create FormData for multipart request
+      const formData = new FormData();
+      
+      // Add the media file if present
+      if (file) {
+        console.log('📎 Adding file to FormData:', {
+          name: file.name,
+          type: file.type,
+          size: file.size
+        });
+        formData.append('media', file);
+        
+        // Log FormData contents for debugging
+        console.log('🔍 FormData contents:');
+        for (const pair of formData.entries()) {
+          console.log(pair[0], pair[1] instanceof File ? `File: ${pair[1].name}` : pair[1]);
         }
+      }
+      
+      // Add all other citation data
+      const locationData = {
+        type: 'Point',
+        coordinates: [citation.location.lng, citation.location.lat]
       };
+      
+      console.log('📍 Location data:', locationData);
+      
+      formData.append('car_id', carId.toString());
+      formData.append('timestamp', citation.timestamp);
+      formData.append('location', JSON.stringify(locationData));
+      formData.append('status', 'submitted');
+      formData.append('violation', citation.violation);
+      formData.append('notes', citation.notes);
   
-      const res = await fetch('/api/citations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload)
-      });
+      try {
+        console.log('🚀 Sending citation data to server');
+        const res = await fetch('/api/citations', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData
+        });
   
-      if (res.ok) {
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Failed to submit citation:', errorText);
+          alert('Failed to submit citation: ' + errorText);
+          return;
+        }
+  
+        const newCitation = await res.json();
+        console.log('✅ Citation created:', newCitation);
+  
         alert('Citation submitted!');
         onClose();
-      } else {
-        alert('Submission failed');
+      } catch (error) {
+        console.error('❌ Error submitting citation:', error);
+        alert('Failed to submit citation. Please try again.');
       }
     };
   
