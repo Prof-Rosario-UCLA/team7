@@ -4,10 +4,20 @@ instance_class: F1
 env_variables:
   DB_USER: appuser
   DB_PASS: password
-  DB_NAME: brakechekrdb
-  DB_HOST: /cloudsql/brakechekr:us-west1:brakechekrdb
-  INSTANCE_CONNECTION_NAME: brakechekr:us-west1:brakechekrdb
+  DB_NAME: breakchekrdb
+  DB_HOST: /cloudsql/breakchekr:us-west1:breakchekrdb
+  INSTANCE_CONNECTION_NAME: breakchekr:us-west1:breakchekrdb
   NODE_ENV: production
+  PORT: 8080
 automatic_scaling:
   max_instances: 1
   min_instances: 1
+handlers:
+  - url: /api/.*
+    script: auto
+  - url: /(.*\..+)$
+    static_files: client-build/\1
+    upload: client-build/(.*\..+)$
+  - url: /.*
+    static_files: client-build/index.html
+    upload: client-build/index.html

@@ -17,6 +17,33 @@ function Map({ citations, center }: MapProps) {
       return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
     };
 
+    const renderMedia = (citation: Citation) => {
+      if (!citation.media_type) return null;
+
+      const mediaUrl = `/api/citations/${citation.id}/media`;
+
+      if (citation.media_type.startsWith('image/')) {
+        return (
+          <img 
+            src={mediaUrl} 
+            alt="Citation evidence" 
+            className="w-full h-auto max-h-48 object-cover rounded-lg mb-2"
+          />
+        );
+      } else if (citation.media_type.startsWith('video/')) {
+        return (
+          <video 
+            src={mediaUrl} 
+            controls 
+            className="w-full h-auto max-h-48 rounded-lg mb-2"
+          >
+            Your browser does not support the video tag.
+          </video>
+        );
+      }
+      return null;
+    };
+
     return (
       <div className="h-[500px] w-full">
         <MapContainer center={center} zoom={14} scrollWheelZoom={true} className="h-full w-full">
@@ -34,10 +61,14 @@ function Map({ citations, center }: MapProps) {
               }}
             >
               <Popup>
-                <div className="space-y-1">
+                <div className="space-y-2">
+                  {renderMedia(citation)}
                   <div><strong>Violation:</strong> {citation.violation}</div>
                   <div><strong>License Plate:</strong> {citation.car.license_plate_num}</div>
                   <div><strong>Time:</strong> {formatDate(citation.timestamp)}</div>
+                  {citation.notes && (
+                    <div><strong>Notes:</strong> {citation.notes}</div>
+                  )}
                 </div>
               </Popup>
             </Marker>

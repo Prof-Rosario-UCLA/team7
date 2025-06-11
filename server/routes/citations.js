@@ -10,14 +10,24 @@ import { Op, fn, col, literal } from 'sequelize';
 const router = express.Router();
 const { Citation, User, Car, sequelize } = db;
 
-// CREATE a new citation → POST /citations
-router.post('/', authenticateToken, async (req, res) => {
+// Set up multer memory storage for temporary file handling
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
+  fileFilter: (req, file, cb) => {
+    const isValid = file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
+    cb(null, isValid);
+  }
+});
+
+// CREATE a new citation with media → POST /citations
+router.post('/', authenticateToken, upload.single('media'), async (req, res) => {
   try {
     console.log('req.user:', req.user);
     console.log('car_id from body:', req.body.car_id);
 
     const {
-      blob,
       car_id,
       timestamp,
       location,
@@ -26,11 +36,11 @@ router.post('/', authenticateToken, async (req, res) => {
       notes
     } = req.body;
 
-    const user_id = req.user.userId; // <-- get user id from the authenticated user
+    const user_id = req.user.userId;
 
     // Validate FK existence:
     const user = await User.findByPk(user_id);
-    const car  = await Car.findByPk(car_id);
+    const car = await Car.findByPk(car_id);
     if (!user || !car) {
       return res.status(400).json({ error: 'Invalid user_id or car_id' });
     }
@@ -38,18 +48,41 @@ router.post('/', authenticateToken, async (req, res) => {
     console.log('user found:', user ? user.id : null);
     console.log('car found:', car ? car.id : null);
 
+    // Create citation with media if present
     const newCitation = await Citation.create({
-      blob:       blob || null,
+      blob: req.file ? req.file.buffer : null,
+      media_type: req.file ? req.file.mimetype : null,
+      media_filename: req.file ? req.file.originalname : null,
       user_id: user_id,
       car_id: car_id,
-      timestamp:  timestamp ? new Date(timestamp) : new Date(),
+      timestamp: timestamp ? new Date(timestamp) : new Date(),
       location,
       status,
       violation,
-      notes:      notes || null
+      notes: notes || null
     });
 
-    return res.status(201).json(newCitation);
+    // Don't send the blob in the response
+    const citationResponse = newCitation.toJSON();
+    delete citationResponse.blob;
+    
+    return res.status(201).json(citationResponse);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET media for a citation → GET /citations/:id/media
+router.get('/:id/media', async (req, res) => {
+  try {
+    const citation = await Citation.findByPk(req.params.id);
+    if (!citation || !citation.blob) {
+      return res.status(404).json({ error: 'Media not found' });
+    }
+
+    res.set('Content-Type', citation.media_type);
+    res.set('Content-Disposition', `inline; filename="${citation.media_filename}"`);
+    return res.send(citation.blob);
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -150,43 +183,6 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
-});
-
-// Ensure uploads directory exists
-const uploadDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-// Set up multer disk storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext);
-    const uniqueName = `${base}-${Date.now()}${ext}`;
-    cb(null, uniqueName);
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
-  fileFilter: (req, file, cb) => {
-    const isValid =
-      file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
-    cb(null, isValid);
-  }
-});
-
-// POST /citations/upload -> Upload file/image
-router.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
-  const url = `/uploads/${req.file.filename}`;
-  res.status(200).json({ url });
 });
 
 export default router;

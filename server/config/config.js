@@ -6,8 +6,9 @@ export default {
   development: {
     username: process.env.DB_USER || 'devuser',
     password: process.env.DB_PASS || 'devpass',
-    database: process.env.DB_NAME || 'devdb',
+    database: process.env.DB_NAME || 'breakchekrdb',
     host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5433,
     dialect: 'postgres'
   },
   production: {

@@ -128,22 +128,6 @@ function Report() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    let blobUrl = '';
-    if (file) {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const uploadRes = await fetch('/api/citations/upload', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (uploadRes.ok) {
-        const { url } = await uploadRes.json();
-        blobUrl = url;
-      }
-    }
-
     let carId: number | undefined;
     const existingCar = cars.find(c => c.license_plate_num === citation.license_plate);
 
@@ -186,22 +170,33 @@ function Report() {
       carId = newCar.id;
     }
 
-    const payload = {
-      ...citation,
-      car_id: carId,
-      blob: blobUrl,
-      status: 'submitted',
-      location: {
-        type: 'Point',
-        coordinates: [citation.location.lng, citation.location.lat]
-      }
-    };
+    if (!carId) {
+      alert('Failed to get car ID');
+      return;
+    }
+
+    // Create FormData for multipart request
+    const formData = new FormData();
+    
+    // Add the media file if present
+    if (file) {
+      formData.append('media', file);
+    }
+    
+    formData.append('car_id', carId.toString());
+    formData.append('timestamp', citation.timestamp);
+    formData.append('location', JSON.stringify({
+      type: 'Point',
+      coordinates: [citation.location.lng, citation.location.lat]
+    }));
+    formData.append('status', 'submitted');
+    formData.append('violation', citation.violation);
+    formData.append('notes', citation.notes);
 
     const res = await fetch('/api/citations', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(payload)
+      body: formData
     });
 
     if (res.ok) {
@@ -292,25 +287,16 @@ function Report() {
         </div>
 
         <div>
-            <label className="block mb-2 font-medium">Upload Image/Video (optional)</label>
-            <div className="flex items-center justify-between gap-4 border border-dashed border-gray-400 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition cursor-pointer">
-            <input
-                type="file"
-                accept="image/*,video/*"
-                id="file-upload"
-                onChange={handleFileChange}
-                className="hidden"
-            />
-            <label
-                htmlFor="file-upload"
-                className="text-[var(--color-primary)] font-semibold cursor-pointer"
-            >
-                {file ? 'Change File' : 'Choose File'}
-            </label>
-            <span className="text-sm text-gray-700 truncate w-full text-right">
-                {file ? file.name : 'No file chosen'}
-            </span>
-            </div>
+          <label className="block mb-1 font-medium">Upload Media (optional)</label>
+          <input
+            type="file"
+            accept="image/*,video/*"
+            onChange={handleFileChange}
+            className="w-full p-2 rounded border border-gray-300"
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            Supported formats: Images (JPEG, PNG, etc.) and Videos (MP4, etc.)
+          </p>
         </div>
 
         <button

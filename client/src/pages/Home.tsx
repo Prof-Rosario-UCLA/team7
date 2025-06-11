@@ -14,6 +14,8 @@ export interface Citation {
     violation: 'speeding' | 'parking' | 'signal' | 'other';
     timestamp: string;
     notes: string;
+    media_type?: string;
+    media_filename?: string;
     car: {
       id: number;
       license_plate_num: string;

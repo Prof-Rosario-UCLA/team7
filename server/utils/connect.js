@@ -20,11 +20,12 @@ if (isProd) {
   );
 } else {
   sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASS,
+    process.env.DB_NAME || 'breakchekrdb',
+    process.env.DB_USER || 'devuser',
+    process.env.DB_PASS || 'devpass',
     {
-      host: process.env.DB_HOST, // e.g., localhost
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || 5433,
       dialect: 'postgres',
       logging: false,
     }

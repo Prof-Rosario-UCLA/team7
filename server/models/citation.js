@@ -5,8 +5,19 @@ const Citation = (sequelize, DataTypes) => {
     'Citation',
     {
       blob: {
-        type: DataTypes.STRING, 
-        allowNull: true
+        type: DataTypes.BLOB('long'),
+        allowNull: true,
+        comment: 'Binary data for uploaded media'
+      },
+      media_type: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'MIME type of the uploaded media'
+      },
+      media_filename: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'Original filename of the uploaded media'
       },
       user_id: {
         type: DataTypes.INTEGER,
