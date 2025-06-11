@@ -27,7 +27,10 @@ const allowedOrigins = [
   'http://127.0.0.1:4173',     // Alternative production preview
   'https://breakchekr.uc.r.appspot.com',  // GAE deployed frontend
   'https://breakchekr.uw.r.appspot.com',  // Alternative region
-  'https://breakchekr.appspot.com'        // Base domain
+  'https://breakchekr.appspot.com',        // Base domain
+  'https://brakechekr.uc.r.appspot.com',  // GAE deployed frontend
+  'https://brakechekr.uw.r.appspot.com',  // Alternative region
+  'https://brakechekr.appspot.com'        // Base domain
 ];
 
 // CORS configuration
