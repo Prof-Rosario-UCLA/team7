@@ -51,15 +51,22 @@ export default function CitationList({ citations }: Props) {
             key={citation.id}
             className="rounded-2xl shadow-md p-4 bg-white text-text border-l-4 border-accent transition hover:scale-[1.01] hover:shadow-lg"
             >
-            {renderMedia(citation)}
-            <div className="text-left space-y-1">
+            <div className="flex flex-col md:flex-row gap-4">
+                {/* Media shown on left (mobile: top) */}
+                <div className="md:w-1/3">
+                {renderMedia(citation)}
+                </div>
+
+                {/* Text shown on right (mobile: bottom) */}
+                <div className="flex-1 text-left space-y-1">
                 <p><strong className="text-primary">Violation:</strong> {citation.violation}</p>
                 <p><strong className="text-primary">License Plate:</strong> {citation.car.license_plate_num}</p>
                 <p><strong className="text-primary">Car:</strong> {citation.car.car_color} {citation.car.car_model}</p>
                 <p><strong className="text-primary">Time:</strong> {new Date(citation.timestamp).toLocaleString()}</p>
                 {citation.notes && (
-                <p><strong className="text-primary">Notes:</strong> {citation.notes}</p>
+                    <p><strong className="text-primary">Notes:</strong> {citation.notes}</p>
                 )}
+                </div>
             </div>
         </article>
       ))}
