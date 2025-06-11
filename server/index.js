@@ -57,7 +57,7 @@ const clientBuildPath = path.join(__dirname, 'client-build'); // You’ll copy d
 
 app.use(express.static(clientBuildPath));
 
-app.get('/{*any}', (req, res) => {
+app.get(/(.*)/, (req, res) => {
   res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
