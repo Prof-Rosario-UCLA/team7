@@ -23,7 +23,7 @@ function LocationSelector({ onSelect }: { onSelect: (lat: number, lng: number) =
   return null;
 }
 
-export default function ReportForm({ onClose }: { onClose: () => void }) {
+export default function ReportForm({ onClose, onSubmitSuccess }: { onClose: () => void, onSubmitSuccess: () => void }) {
     const [citation, setCitation] = useState({
       license_plate: '',
       car_color: '',
@@ -234,7 +234,7 @@ export default function ReportForm({ onClose }: { onClose: () => void }) {
         console.log('✅ Citation created:', newCitation);
   
         alert('Citation submitted!');
-        onClose();
+        onSubmitSuccess();
       } catch (error) {
         console.error('❌ Error submitting citation:', error);
         alert('Failed to submit citation. Please try again.');
