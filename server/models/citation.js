@@ -4,10 +4,12 @@ const Citation = (sequelize, DataTypes) => {
   const Citation = sequelize.define(
     'Citation',
     {
+      /*
       blob: {
         type: DataTypes.STRING, // a blob referenced by a url or file key
         allowNull: true
       },
+      */
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
